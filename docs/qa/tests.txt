@@ -1,0 +1,13 @@
+
+> midnight-harbour@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /Users/intrepion/Documents/Codex/2026-10-12/task-2/kata-inspired-by-full-tilt-pinball-codex-dot
+
+
+ Test Files  4 passed (4)
+      Tests  21 passed (21)
+   Start at  01:02:28
+   Duration  655ms (transform 51%, tests 31%, import 12%, worker 5%)
+

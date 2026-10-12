@@ -1,17 +1,257 @@
-import './style.css';import {Simulation} from './physics';import {parseScores} from './rules';import {render} from './render';
-const el=(id:string)=>document.getElementById(id)!;const s=new Simulation();const canvas=el('table') as HTMLCanvasElement;const ctx=canvas.getContext('2d')!;const reduced=matchMedia('(prefers-reduced-motion: reduce)');let charging=false,charge=0,last=performance.now(),saved=false,muted=true,audio:AudioContext|undefined;let scores:number[]=[];const fmt=(n:number)=>n.toLocaleString('en-US');
-try{scores=parseScores(localStorage.getItem('midnight-harbour-scores'));}catch{el('storage-note').textContent='Local storage unavailable.';}
-function showRecords(){el('records').replaceChildren(...(scores.length?scores:[0]).map(n=>{const li=document.createElement('li');li.textContent=n?fmt(n):'Your first shift awaits';return li;}));}showRecords();
-function sound(freq:number){if(muted)return;try{audio??=new AudioContext();void audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,audio.currentTime);osc.frequency.exponentialRampToValueAtTime(freq*.5,audio.currentTime+.14);gain.gain.setValueAtTime(.09,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.18);osc.connect(gain).connect(audio.destination);osc.start();osc.stop(audio.currentTime+.2);}catch{muted=true;el('mute').textContent='Sound unavailable';}}
-s.onHit=kind=>sound(kind==='bumper'?330:kind==='beacon'?880:550);
-function clear(){charging=false;charge=0;s.clearInputs();for(const id of ['left','right','launch'])el(id).classList.remove('active');}
-function pause(){if(s.rules.phase==='over')return;s.pause(!s.rules.paused);clear();}
-function restart(){clear();s.reset();saved=false;last=performance.now();}
-function startCharge(){if(s.rules.phase!=='ready'||s.rules.paused)return;charging=true;charge=0;}
-function release(){if(charging){s.launch(charge);sound(180);}charging=false;charge=0;}
-function action(key:string,down:boolean){if(key==='a'||key==='ArrowLeft'){s.left=down&&!s.rules.paused;el('left').classList.toggle('active',s.left);}if(key==='d'||key==='ArrowRight'){s.right=down&&!s.rules.paused;el('right').classList.toggle('active',s.right);}if(key===' '){if(down)startCharge();else release();}}
-window.addEventListener('keydown',e=>{const key=e.key;if([' ','ArrowLeft','ArrowRight','ArrowUp','a','d','n','p','r'].includes(key)){if(e.target instanceof HTMLButtonElement&&key===' ')return;e.preventDefault();if(e.repeat)return;if(key==='p'){pause();return;}if(key==='r'){restart();return;}if(key==='n'||key==='ArrowUp'){s.nudge();return;}action(key,true);}});window.addEventListener('keyup',e=>action(e.key,false));
-for(const [id,key] of [['left','a'],['right','d'],['launch',' ']]){const button=el(id);button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);action(key,true);});button.addEventListener('pointerup',()=>action(key,false));button.addEventListener('pointercancel',()=>{clear();});button.addEventListener('lostpointercapture',()=>{if(key!==' ')action(key,false);});}
-const interrupt=()=>{if(s.rules.phase!=='over')s.pause(true);clear();};window.addEventListener('blur',interrupt);document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});el('pause').onclick=pause;el('restart').onclick=restart;el('nudge').onclick=()=>s.nudge();el('overlay-action').onclick=()=>{if(s.rules.phase==='over')restart();else pause();};el('mute').onclick=()=>{muted=!muted;el('mute').textContent=muted?'Sound off':'Sound on';el('mute').setAttribute('aria-label',muted?'Enable sound':'Mute sound');if(!muted)sound(440);};
-function ui(){const r=s.rules;el('score').textContent=fmt(r.score).padStart(7,'0');el('ball').textContent=`BALL 0${r.ballNumber} / 03`;el('multi').textContent=`BONUS ×${r.multiplier}`;el('objective').textContent=r.objective;el('bonus').textContent=`Bonus bank · ${fmt(r.bonus)} × ${r.multiplier}`;el('message').textContent=r.paused?'Paused · press P or Resume to continue':charging?`Launcher charging · ${Math.round(charge*100)}%`:r.message;el('mission-help').textContent=r.buoys.size<3?'Hit all three diamond navigation buoys.':r.charge<5?'Hit any bumper five times to charge the beacon.':'Strike the central lighthouse to complete the rescue.';el('stage1').classList.toggle('done',r.buoys.size===3);el('stage2').classList.toggle('done',r.charge===5);el('stage3').textContent=`03 Rescue${r.rescues?' · '+r.rescues:''}`;el('save').textContent=r.tilted?'TILT':r.phase==='playing'&&r.time-r.launchTime<5?`BALL SAVE · ${Math.ceil(5-r.time+r.launchTime)}s`:r.phase==='ready'?'READY TO SAIL':`NUDGE ${r.warning}/3`;el('charge').style.width=`${charge*100}%`;el('pause').textContent=r.paused?'Resume · P':'Pause · P';const overlay=r.paused||r.phase==='over';el('overlay').hidden=!overlay;if(overlay){el('overlay-label').textContent=r.phase==='over'?'SHIFT COMPLETE':'SHIFT ON HOLD';el('overlay-title').textContent=r.phase==='over'?'Safe harbour.':'Take a breath.';el('overlay-copy').textContent=r.phase==='over'?`${fmt(r.score)} points · ${r.rescues} rescues\nBest shift: ${fmt(scores[0]??0)}`:'Your table is waiting.\nInputs are released while paused.';el('overlay-action').textContent=r.phase==='over'?'Play again':'Resume';}}
-function frame(now:number){const dt=Math.min(.1,(now-last)/1000);last=now;if(charging&&!s.rules.paused)charge=Math.min(1,charge+dt*.8);s.advance(dt);if(s.rules.phase==='over'&&!saved){saved=true;scores=parseScores(JSON.stringify([...scores,s.rules.score]));try{localStorage.setItem('midnight-harbour-scores',JSON.stringify(scores));}catch{el('storage-note').textContent='Score shown for this session; storage unavailable.';}showRecords();}render(ctx,s,reduced.matches);ui();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+import "./style.css";
+import { controlForKey, HeldKeys } from "./input";
+import { Simulation } from "./physics";
+import { parseScores } from "./rules";
+import { render } from "./render";
+const el = (id: string) => document.getElementById(id)!;
+const s = new Simulation();
+const heldKeys = new HeldKeys();
+const canvas = el("table") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d")!;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+let charging = false,
+  charge = 0,
+  last = performance.now(),
+  saved = false,
+  muted = true,
+  audio: AudioContext | undefined;
+let scores: number[] = [];
+const fmt = (n: number) => n.toLocaleString("en-US");
+try {
+  scores = parseScores(localStorage.getItem("midnight-harbour-scores"));
+} catch {
+  el("storage-note").textContent = "Local storage unavailable.";
+}
+function showRecords() {
+  el("records").replaceChildren(
+    ...(scores.length ? scores : [0]).map((n) => {
+      const li = document.createElement("li");
+      li.textContent = n ? fmt(n) : "Your first shift awaits";
+      return li;
+    }),
+  );
+}
+showRecords();
+function sound(freq: number) {
+  if (muted) return;
+  try {
+    audio ??= new AudioContext();
+    void audio.resume();
+    const osc = audio.createOscillator(),
+      gain = audio.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, audio.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(
+      freq * 0.5,
+      audio.currentTime + 0.14,
+    );
+    gain.gain.setValueAtTime(0.09, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.18);
+    osc.connect(gain).connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime + 0.2);
+  } catch {
+    muted = true;
+    el("mute").textContent = "Sound unavailable";
+  }
+}
+s.onHit = (kind) =>
+  sound(kind === "bumper" ? 330 : kind === "beacon" ? 880 : 550);
+function clear() {
+  heldKeys.clear();
+  charging = false;
+  charge = 0;
+  s.clearInputs();
+  for (const id of ["left", "right", "launch"])
+    el(id).classList.remove("active");
+}
+function pause() {
+  if (s.rules.phase === "over") return;
+  s.pause(!s.rules.paused);
+  clear();
+}
+function restart() {
+  clear();
+  s.reset();
+  saved = false;
+  last = performance.now();
+}
+function startCharge() {
+  if (s.rules.phase !== "ready" || s.rules.paused) return;
+  charging = true;
+  charge = 0;
+}
+function release() {
+  if (charging) {
+    s.launch(charge);
+    sound(180);
+  }
+  charging = false;
+  charge = 0;
+}
+function action(key: string, down: boolean) {
+  if (key === "a" || key === "ArrowLeft") {
+    s.left = down && !s.rules.paused;
+    el("left").classList.toggle("active", s.left);
+  }
+  if (key === "d" || key === "ArrowRight") {
+    s.right = down && !s.rules.paused;
+    el("right").classList.toggle("active", s.right);
+  }
+  if (key === " ") {
+    if (down) startCharge();
+    else release();
+  }
+}
+window.addEventListener("keydown", (e) => {
+  const key = controlForKey(e.key, e.code, (e.target as HTMLElement)?.id);
+  if (
+    [
+      " ",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "a",
+      "d",
+      "n",
+      "p",
+      "r",
+    ].includes(key)
+  ) {
+    if (
+      e.target instanceof HTMLButtonElement &&
+      key === " " &&
+      !["left", "right", "launch"].includes(e.target.id)
+    )
+      return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (key === "p") {
+      pause();
+      return;
+    }
+    if (key === "r") {
+      restart();
+      return;
+    }
+    if (key === "n" || key === "ArrowUp") {
+      s.nudge();
+      return;
+    }
+    heldKeys.press(e.code, key);
+    action(key, true);
+  }
+});
+window.addEventListener("keyup", (e) => {
+  const key = heldKeys.release(e.code);
+  if (key) action(key, heldKeys.has(key));
+});
+for (const [id, key] of [
+  ["left", "a"],
+  ["right", "d"],
+  ["launch", " "],
+]) {
+  const button = el(id);
+  button.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    button.setPointerCapture(e.pointerId);
+    action(key, true);
+  });
+  button.addEventListener("pointerup", () => action(key, false));
+  button.addEventListener("pointercancel", () => {
+    clear();
+  });
+  button.addEventListener("lostpointercapture", () => {
+    if (key === " ") {
+      charging = false;
+      charge = 0;
+    } else action(key, false);
+  });
+}
+const interrupt = () => {
+  if (s.rules.phase !== "over") s.pause(true);
+  clear();
+};
+window.addEventListener("blur", interrupt);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) interrupt();
+});
+el("pause").onclick = pause;
+el("restart").onclick = restart;
+el("nudge").onclick = () => s.nudge();
+el("overlay-action").onclick = () => {
+  if (s.rules.phase === "over") restart();
+  else pause();
+};
+el("mute").onclick = () => {
+  muted = !muted;
+  el("mute").textContent = muted ? "Sound off" : "Sound on";
+  el("mute").setAttribute("aria-label", muted ? "Enable sound" : "Mute sound");
+  if (!muted) sound(440);
+};
+function ui() {
+  const r = s.rules;
+  el("score").textContent = fmt(r.score).padStart(7, "0");
+  el("ball").textContent = `BALL 0${r.ballNumber} / 03`;
+  el("multi").textContent = `BONUS ×${r.multiplier}`;
+  el("objective").textContent = r.objective;
+  el("bonus").textContent = `Bonus bank · ${fmt(r.bonus)} × ${r.multiplier}`;
+  el("message").textContent = r.paused
+    ? "Paused · press P or Resume to continue"
+    : charging
+      ? `Launcher charging · ${Math.round(charge * 100)}%`
+      : r.message;
+  el("mission-help").textContent =
+    r.buoys.size < 3
+      ? "Hit all three diamond navigation buoys."
+      : r.charge < 5
+        ? "Hit any bumper five times to charge the beacon."
+        : "Strike the central lighthouse to complete the rescue.";
+  el("stage1").classList.toggle("done", r.buoys.size === 3);
+  el("stage2").classList.toggle("done", r.charge === 5);
+  el("stage3").textContent = `03 Rescue${r.rescues ? " · " + r.rescues : ""}`;
+  el("save").textContent = r.tilted
+    ? "TILT"
+    : r.phase === "playing" && r.time - r.launchTime < 5
+      ? `BALL SAVE · ${Math.ceil(5 - r.time + r.launchTime)}s`
+      : r.phase === "ready"
+        ? "READY TO SAIL"
+        : `NUDGE ${r.warning}/3`;
+  el("charge").style.width = `${charge * 100}%`;
+  el("pause").textContent = r.paused ? "Resume · P" : "Pause · P";
+  const overlay = r.paused || r.phase === "over";
+  el("overlay").hidden = !overlay;
+  if (overlay) {
+    el("overlay-label").textContent =
+      r.phase === "over" ? "SHIFT COMPLETE" : "SHIFT ON HOLD";
+    el("overlay-title").textContent =
+      r.phase === "over" ? "Safe harbour." : "Take a breath.";
+    el("overlay-copy").textContent =
+      r.phase === "over"
+        ? `${fmt(r.score)} points · ${r.rescues} rescues\nBest shift: ${fmt(scores[0] ?? 0)}`
+        : "Your table is waiting.\nInputs are released while paused.";
+    el("overlay-action").textContent =
+      r.phase === "over" ? "Play again" : "Resume";
+  }
+}
+function frame(now: number) {
+  const dt = Math.min(0.1, (now - last) / 1000);
+  last = now;
+  if (charging && !s.rules.paused) charge = Math.min(1, charge + dt * 0.8);
+  s.advance(dt);
+  if (s.rules.phase === "over" && !saved) {
+    saved = true;
+    scores = parseScores(JSON.stringify([...scores, s.rules.score]));
+    try {
+      localStorage.setItem("midnight-harbour-scores", JSON.stringify(scores));
+    } catch {
+      el("storage-note").textContent =
+        "Score shown for this session; storage unavailable.";
+    }
+    showRecords();
+  }
+  render(ctx, s, reduced.matches);
+  ui();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);

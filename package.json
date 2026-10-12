@@ -1,1 +1,19 @@
-{"name":"midnight-harbour","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1 --port 5212 --strictPort","build":"tsc --noEmit && vite build","typecheck":"tsc --noEmit","test":"vitest run","preview":"vite preview --host 127.0.0.1 --port 5212 --strictPort"},"devDependencies":{"typescript":"~5.9.3","vite":"^8.3.4","vitest":"^5.0.3"}}
+{
+  "name": "midnight-harbour",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5212 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "preview": "vite preview --host 127.0.0.1 --port 5212 --strictPort"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}
