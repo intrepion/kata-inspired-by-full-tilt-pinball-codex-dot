@@ -1,0 +1,2 @@
+# Standards
+Use strict TypeScript. Keep rule transitions independent of browser APIs. Physics has bounded speed and fixed time steps. Contact scoring happens on entry with debounce, never continuously while resting. Browser inputs clear on pause, blur and cancellation. No production debug mutation API. Tests describe public behavior with independently specified expected results. UI must label controls and not depend on colour alone.

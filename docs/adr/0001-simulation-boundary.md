@@ -1,0 +1,2 @@
+# Keep rules independent of rendering
+The deterministic rules and fixed-step simulation own game state; canvas and input adapters observe them. A general physics engine was considered, but a small bounded arcade model gives reproducible contact and scoring tests and easier local delivery. The tradeoff is approximate rather than engineering-grade physics, with explicit substeps and recovery safeguards.
