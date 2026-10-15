@@ -1,4 +1,4 @@
-import { Simulation, walls, circles } from "./physics";
+import { Simulation, walls, circles, dock } from "./physics";
 const W = 520,
   H = 860;
 export function render(
@@ -165,7 +165,7 @@ export function render(
       o.kind === "buoy"
         ? s.rules.buoys.has(o.id)
         : o.kind === "beacon"
-          ? s.rules.charge === 5
+          ? s.rules.charge === 5 || s.rules.jackpotLit
           : false;
     const col =
       o.kind === "buoy"
@@ -206,7 +206,39 @@ export function render(
   text("1", 70, 282, 8, "#adbdad");
   text("2", 258, 103, 8, "#adbdad");
   text("3", 428, 282, 8, "#adbdad");
-  text("BEACON", 258, 359, 8, "#d6bc85");
+  text(
+    s.rules.jackpotLit ? "JACKPOT 10,000" : "BEACON",
+    258,
+    359,
+    8,
+    "#d6bc85",
+  );
+  const dockLit = s.rules.lockMode !== "unlit";
+  disc(
+    dock.x,
+    dock.y,
+    dock.radius + 8,
+    "#142c36",
+    dockLit ? "#93f5e5" : "#8d9a91",
+    3,
+  );
+  disc(dock.x, dock.y, dock.radius, "#020b13", "#718e89", 2);
+  if (s.rules.lockMode === "locked")
+    disc(dock.x, dock.y, 8, "#dce9df", "#f6fff3", 1);
+  text("DOCK LOCK", dock.x, dock.y + 47, 8, dockLit ? "#b1f9e9" : "#95aaa1");
+  text(
+    s.rules.lockMode === "locked"
+      ? "1 LOCKED"
+      : s.rules.lockMode === "multiball"
+        ? "MULTIBALL"
+        : dockLit
+          ? "LOCK LIT"
+          : `${s.rules.lockBuoys.size}/3 BUOYS`,
+    dock.x,
+    dock.y + 60,
+    8,
+    "#9bbab4",
+  );
   for (let i = 0; i < 5; i++)
     disc(
       222 + i * 18,
@@ -239,23 +271,25 @@ export function render(
   text("ORIGINAL TABLE / 2026", 258, 829, 7, "#688983");
   // launcher spring
   for (let y = 802; y < 835; y += 5) line(461, y, 479, y + 3, "#a9a98d", 2);
-  if (!reduced && s.rules.phase === "playing")
-    s.trail.forEach(([x, y], i) => {
-      c.beginPath();
-      c.arc(x, y, 4 + i / 6, 0, Math.PI * 2);
-      c.fillStyle = `rgba(130,233,225,${(i / s.trail.length) * 0.16})`;
-      c.fill();
-    });
-  const b = s.ball;
-  c.save();
-  c.shadowColor = "#91e2da";
-  c.shadowBlur = 12;
-  const metal = c.createRadialGradient(b.x - 3, b.y - 4, 1, b.x, b.y, 10);
-  metal.addColorStop(0, "#fff");
-  metal.addColorStop(0.3, "#d6e6df");
-  metal.addColorStop(0.65, "#8da9ad");
-  metal.addColorStop(1, "#324e58");
-  disc(b.x, b.y, 9, metal, "#e5f3e3", 1);
-  c.restore();
+  for (const b of s.balls) {
+    const trail = s.trailFor(b);
+    if (!reduced && s.rules.phase === "playing")
+      trail.forEach(([x, y], i) => {
+        c.beginPath();
+        c.arc(x, y, 4 + i / 6, 0, Math.PI * 2);
+        c.fillStyle = `rgba(130,233,225,${(i / trail.length) * 0.16})`;
+        c.fill();
+      });
+    c.save();
+    c.shadowColor = "#91e2da";
+    c.shadowBlur = 12;
+    const metal = c.createRadialGradient(b.x - 3, b.y - 4, 1, b.x, b.y, 10);
+    metal.addColorStop(0, "#fff");
+    metal.addColorStop(0.3, "#d6e6df");
+    metal.addColorStop(0.65, "#8da9ad");
+    metal.addColorStop(1, "#324e58");
+    disc(b.x, b.y, 9, metal, "#e5f3e3", 1);
+    c.restore();
+  }
   if (s.rules.tilted) text("T I L T", 258, 485, 40, "#f1a28b", "Georgia");
 }

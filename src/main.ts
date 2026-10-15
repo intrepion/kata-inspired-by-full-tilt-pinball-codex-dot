@@ -192,9 +192,12 @@ el("mute").onclick = () => {
 function ui() {
   const r = s.rules;
   el("score").textContent = fmt(r.score).padStart(7, "0");
-  el("ball").textContent = `BALL 0${r.ballNumber} / 03`;
+  el("ball").textContent =
+    `BALL 0${r.ballNumber} / 03${s.balls.length > 1 ? ` · ${s.balls.length} LIVE` : ""}`;
   el("multi").textContent = `BONUS ×${r.multiplier}`;
   el("objective").textContent = r.objective;
+  el("lock-objective").textContent =
+    `${r.lockObjective}${r.jackpots ? ` · ${r.jackpots} JACKPOT` : ""}`;
   el("bonus").textContent = `Bonus bank · ${fmt(r.bonus)} × ${r.multiplier}`;
   el("message").textContent = r.paused
     ? "Paused · press P or Resume to continue"

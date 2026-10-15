@@ -1,5 +1,7 @@
 # Midnight Harbour
 
+The table now includes a physical dock lock and two-ball multiball. Mark three buoys, shoot the left dock sink, serve with Space, then shoot that sink again. Two live balls release into the field; the lighthouse lights a once-per-multiball 10,000 jackpot. Losing one ball keeps the other in play; only the final drain advances the numbered stock and banks bonus. Original rescue and saved high scores remain intact. [Focused correction and acceptance evidence](docs/MULTIBALL_FIDELITY.md).
+
 An original browser pinball table about guiding a rescue vessel through the night. Inspired by the tactile appeal of classic desktop pinball, including Full Tilt! Pinball; no original game's artwork, layouts, rules, branding, music or code is copied.
 
 ## Play locally

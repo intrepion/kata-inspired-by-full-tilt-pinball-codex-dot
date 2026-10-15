@@ -1,5 +1,5 @@
 export type Phase = "ready" | "playing" | "over";
-export type Hit = "buoy" | "bumper" | "beacon" | "sling" | "lane";
+export type Hit = "buoy" | "bumper" | "beacon" | "sling" | "lane" | "lock";
 export class Rules {
   phase: Phase = "ready";
   score = 0;
@@ -9,6 +9,11 @@ export class Rules {
   buoys = new Set<number>();
   charge = 0;
   rescues = 0;
+  lockMode: "unlit" | "lit" | "locked" | "multiball" = "unlit";
+  lockBuoys = new Set<number>();
+  multiballs = 0;
+  jackpots = 0;
+  jackpotLit = false;
   tilted = false;
   paused = false;
   time = 0;
@@ -26,21 +31,54 @@ export class Rules {
     if (this.phase !== "ready" || this.paused) return false;
     this.phase = "playing";
     this.launchTime = this.time;
-    this.message = "Mark the three navigation buoys";
+    this.message =
+      this.lockMode === "locked"
+        ? "Locked ball waiting · shoot the left dock again to release multiball"
+        : "Mark the three navigation buoys";
     return true;
   }
   tick(dt: number) {
     if (!this.paused) this.time += dt;
   }
-  hit(kind: Hit, id: number) {
+  hit(kind: Hit, id: number, ballId = 0) {
     if (this.phase !== "playing" || this.paused || this.tilted) return false;
-    const key = `${kind}:${id}`;
+    const key = `${ballId}:${kind}:${id}`;
     if (this.time - (this.contacts.get(key) ?? -100) < 0.18) return false;
     this.contacts.set(key, this.time);
-    this.score += { buoy: 500, bumper: 150, beacon: 300, sling: 75, lane: 250 }[
-      kind
-    ];
+    this.score += {
+      buoy: 500,
+      bumper: 150,
+      beacon: 300,
+      sling: 75,
+      lane: 250,
+      lock: 500,
+    }[kind];
     this.bonus += 100;
+    if (kind === "buoy" && this.lockMode === "unlit") {
+      this.lockBuoys.add(id);
+      if (this.lockBuoys.size === 3) this.lockMode = "lit";
+    }
+    if (kind === "lock") {
+      if (this.lockMode === "lit") {
+        this.lockMode = "locked";
+        this.phase = "ready";
+        this.score += 2000;
+        this.message =
+          "DOCK LOCKED · serve with Space, then shoot the dock again";
+      } else if (this.lockMode === "locked") {
+        this.lockMode = "multiball";
+        this.multiballs++;
+        this.jackpotLit = true;
+        this.message =
+          "TWO-BALL MULTIBALL · shoot the lighthouse for 10,000 JACKPOT";
+      } else this.message = "Dock kickout · mark three buoys to light the lock";
+    }
+    if (kind === "beacon" && this.lockMode === "multiball" && this.jackpotLit) {
+      this.score += 10000;
+      this.jackpots++;
+      this.jackpotLit = false;
+      this.message = "JACKPOT · 10,000 · keep both balls alive";
+    }
     if (kind === "buoy" && this.buoys.size < 3) {
       this.buoys.add(id);
       this.message =
@@ -74,6 +112,7 @@ export class Rules {
     }
     if (!this.tilted) this.score += this.bonus * this.multiplier;
     this.bonus = 0;
+    this.endMultiball();
     this.contacts.clear();
     if (this.ballNumber === 3) {
       this.phase = "over";
@@ -86,6 +125,22 @@ export class Rules {
     this.tilted = false;
     this.nudges = [];
     return "drained";
+  }
+  endMultiball() {
+    this.lockMode = "unlit";
+    this.lockBuoys.clear();
+    this.jackpotLit = false;
+  }
+  get lockObjective() {
+    return this.lockMode === "multiball"
+      ? this.jackpotLit
+        ? "MULTIBALL · LIGHTHOUSE JACKPOT"
+        : "MULTIBALL · KEEP BOTH ALIVE"
+      : this.lockMode === "locked"
+        ? "DOCK LOCKED · SHOOT DOCK AGAIN"
+        : this.lockMode === "lit"
+          ? "DOCK LOCK LIT · SHOOT LEFT SINK"
+          : `LIGHT DOCK LOCK · ${this.lockBuoys.size}/3 BUOYS`;
   }
   nudge() {
     if (
