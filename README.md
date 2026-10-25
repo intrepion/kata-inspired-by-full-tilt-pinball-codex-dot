@@ -43,3 +43,7 @@ Hit all three diamond buoys (500 each), then five bumper hits (150 each), then t
 120 Hz deterministic integration with four contact substeps, circle/capsule collision and moving-flipper surface velocity; speed capped at 1,250 table units/second. This is deliberately approximate arcade physics, with forgiving flipper impulses and an automatic current to free a stationary ball after six seconds. No guaranteed reproduction of a real machine.
 
 `npm test`, `npm run typecheck`, `npm run build`, and `npm audit --audit-level=moderate` match CI. See [specification](docs/SPEC.md), [glossary](GLOSSARY.md), [decision](docs/adr/0001-simulation-boundary.md), and [QA report](docs/qa/REPORT.md). No external runtime dependencies, trackers, fonts or assets.
+
+## Play online
+
+[Play the hosted game](https://intrepion.github.io/kata-inspired-by-full-tilt-pinball-codex-dot/)
