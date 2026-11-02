@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "workflowCommit": "a2ba1e723c856ab7470081496391723065c34e4d",
+  "sourceCommit": "7cc6af98a242ccc4da30157de933bf3dd67652e7",
+  "runId": "41430288862",
+  "url": "http://127.0.0.1:4268/",
+  "inputs": {
+    "index.html": "3898cd5a45cecfc3150795f7bbd2927564d46749f3fb489bfc0eb3ec0fd51f76",
+    "assets/index-C_gTLgto.js": "132d25f1b05b66484e6993978c6a1779ab21ea0881643dc02c1d1d44eeb29d57",
+    "assets/index-DjZzJP4p.css": "379a7f6000d8ce2671c282901ec43a7a9afe130c79be1736e6eea05bd050da46"
+  },
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1280,
+    "height": 1200
+  },
+  "screenshots": [
+    "midnight-harbour-01.png",
+    "midnight-harbour-02.png"
+  ]
+}

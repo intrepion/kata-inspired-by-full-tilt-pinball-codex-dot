@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "gameId": "kata-inspired-by-full-tilt-pinball-codex-dot",
   "playUrl": "https://intrepion.github.io/kata-inspired-by-full-tilt-pinball-codex-dot/",
   "screenshots": [
@@ -23,6 +23,46 @@
         "sourcePath": "docs/qa/fidelity-2026-10-15/dock-locked.jpg",
         "deployedBuild": null,
         "captureDate": null
+      }
+    },
+    {
+      "path": "arcade/screenshots/ci-20261102-01.jpg",
+      "sha256": "fb0ba006e3c02f7cc37c26f3ec9f94dd7fc2eea97c437b2167456797cfe76a4e",
+      "alt": "Midnight Harbour gameplay, view 1",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-01.png",
+        "sourceSha256": "ce5ba1651061477c4eb49d25ba4c6d6095c5d9414ca14a053f312b0a221efded",
+        "captureCommit": "7cc6af98a242ccc4da30157de933bf3dd67652e7",
+        "workflowRunId": "41430288862",
+        "inputHashes": {
+          "index.html": "3898cd5a45cecfc3150795f7bbd2927564d46749f3fb489bfc0eb3ec0fd51f76",
+          "assets/index-C_gTLgto.js": "132d25f1b05b66484e6993978c6a1779ab21ea0881643dc02c1d1d44eeb29d57",
+          "assets/index-DjZzJP4p.css": "379a7f6000d8ce2671c282901ec43a7a9afe130c79be1736e6eea05bd050da46"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "0a7be84dec924f63bb9a8bd9c5a533ad2234bb67bd3cbb2c3718468a0263e0cf"
+      }
+    },
+    {
+      "path": "arcade/screenshots/ci-20261102-02.jpg",
+      "sha256": "d479159362cad13133fc9445554a789a7992d209a1b5ccbf51bc78ef3bf6d049",
+      "alt": "Midnight Harbour gameplay, view 2",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-02.png",
+        "sourceSha256": "1fb718cd660b0a202179a1634c6d91ff12fc86a625b2222570062145daf92c43",
+        "captureCommit": "7cc6af98a242ccc4da30157de933bf3dd67652e7",
+        "workflowRunId": "41430288862",
+        "inputHashes": {
+          "index.html": "3898cd5a45cecfc3150795f7bbd2927564d46749f3fb489bfc0eb3ec0fd51f76",
+          "assets/index-C_gTLgto.js": "132d25f1b05b66484e6993978c6a1779ab21ea0881643dc02c1d1d44eeb29d57",
+          "assets/index-DjZzJP4p.css": "379a7f6000d8ce2671c282901ec43a7a9afe130c79be1736e6eea05bd050da46"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "0a7be84dec924f63bb9a8bd9c5a533ad2234bb67bd3cbb2c3718468a0263e0cf"
       }
     }
   ]
