@@ -28,7 +28,7 @@ jobs:
         env:
           CAPTURE_OUTPUT: capture-output
         run: |
-          export GAME_SOURCE_COMMIT="$(git rev-parse HEAD^)"
+          export GAME_SOURCE_COMMIT="7cc6af98a242ccc4da30157de933bf3dd67652e7"
           python3 -m http.server 4268 --bind 127.0.0.1 --directory capture-site > /tmp/midnight-harbour-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
