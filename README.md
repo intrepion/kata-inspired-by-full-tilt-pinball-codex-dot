@@ -47,3 +47,7 @@ Hit all three diamond buoys (500 each), then five bumper hits (150 each), then t
 ## Play online
 
 [Play the hosted game](https://intrepion.github.io/kata-inspired-by-full-tilt-pinball-codex-dot/)
+
+## Arcade metadata
+
+See [docs/arcade-metadata.md](docs/arcade-metadata.md) for the game-owned manifest and screenshot provenance.

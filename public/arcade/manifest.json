@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "gameId": "kata-inspired-by-full-tilt-pinball-codex-dot",
+  "playUrl": "https://intrepion.github.io/kata-inspired-by-full-tilt-pinball-codex-dot/",
+  "screenshots": [
+    {
+      "path": "arcade/screenshots/view-01.jpg",
+      "sha256": "b64748c093689b6e24dc013ad4fa066f99a7d89eb6255374697e7b13afa720a3",
+      "alt": "Gameplay capture 1",
+      "provenance": {
+        "kind": "existing_repository_capture",
+        "sourcePath": "docs/qa/table.jpg",
+        "deployedBuild": null,
+        "captureDate": null
+      }
+    },
+    {
+      "path": "arcade/screenshots/view-02.jpg",
+      "sha256": "0a43f96efbacbce9f97c466bb6276a704616b0a296eefc840163660810729df1",
+      "alt": "Gameplay capture 2",
+      "provenance": {
+        "kind": "existing_repository_capture",
+        "sourcePath": "docs/qa/fidelity-2026-10-15/dock-locked.jpg",
+        "deployedBuild": null,
+        "captureDate": null
+      }
+    }
+  ]
+}
